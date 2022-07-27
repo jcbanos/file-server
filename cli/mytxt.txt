@@ -1,2 +1,2 @@
-This is my texty text
-It is a very good text
+This is an example text!
+Hopefully it gets sent to clients!
