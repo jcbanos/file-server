@@ -75,6 +75,7 @@ func (s *server) sendFileToSubscribedClients(fileName string, channel int) {
 	}
 
 	fmt.Println(fileName + " has been sent to clients in channel " + strconv.Itoa(channel) + "!")
+	println()
 }
 
 
@@ -122,6 +123,9 @@ func (s *server) handleRecieveClient(conn net.Conn, sliceArgs []string){
 	// Increment client count and add client connection/channel to the map
 	s.clientCount += 1
 	s.addClient(conn, channel)
+
+	fmt.Printf("Client with id %s is now subscribed to channel %s\n", strId, sliceArgs[2])
+	println()
 }
 
 func (s *server) handleSendClient(conn net.Conn, sliceArgs []string){
@@ -187,6 +191,7 @@ func main(){
 		return
 	} else {
 		fmt.Println("Launching server...")
+		println()
 	}
 
 	// Create server struct with maps of client connections to keep track of client's subscriptions

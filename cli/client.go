@@ -53,7 +53,7 @@ func main() {
 func handleRecieve( conn net.Conn, arguments []string) {
     recvBuf := make([]byte, BUFFER)
     fmt.Fprintf(conn, arguments[1] + " " + arguments[2] + " " + arguments[3])
-    println("Hello!")
+
     // Get client ID
     _, err := conn.Read(recvBuf[:])
     if err != nil {
@@ -85,6 +85,7 @@ func handleRecieve( conn net.Conn, arguments []string) {
         bufferFileName := make([]byte, 64)
         conn.Read(bufferFileName)
         fileName := strings.Trim(string(bufferFileName), ":")
+        println()
         fmt.Printf("Recieving %s from channel %s\n", fileName, arguments[3])
     
         // Create file
