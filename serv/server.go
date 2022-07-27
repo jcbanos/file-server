@@ -36,13 +36,45 @@ func (s *server) addClient(c net.Conn, channel int) {
 // Function that will send file to cleints subscribed to a channel
 func (s *server) sendFileToSubscribedClients(fileName string, channel int) {
 
-	// Retrieve list of clients whom I will se
+	// Retrieve list of clients whom I will send file to
 	clientsToSend := s.clients[channel]
-	fmt.Printf("Clients to send to: %d\n", clientsToSend)
-	for _, client := range clientsToSend{
-		fmt.Printf("%p\n", client )
+
+	for _, clientConn := range clientsToSend {
+		// Open file to be sent
+		file, err := os.Open(filepath.Join("files", filepath.Base(fileName)))
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		// Get file info to get file size and file name. Then send to clients
+		fileInfo, err := file.Stat()
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		fileSize := fillString(strconv.FormatInt(fileInfo.Size(), 10), 10)
+		fileNameSend := fillString(fileInfo.Name(), 64)
+		// File name to client
+		clientConn.Write([]byte(fileNameSend))
+		// Filesize to client
+		clientConn.Write([]byte(fileSize))
+		// Create buffer to send file
+		sendBuffer := make([]byte, BUFFER)
+
+		// Send file
+		for {
+			_, err := file.Read(sendBuffer)
+			if err == io.EOF {
+				break
+			}
+			clientConn.Write(sendBuffer)
+		}
+		file.Close()
 	}
 
+	fmt.Println(fileName + " has been sent to clients in channel " + strconv.Itoa(channel) + "!")
 }
 
 
@@ -93,7 +125,6 @@ func (s *server) handleRecieveClient(conn net.Conn, sliceArgs []string){
 }
 
 func (s *server) handleSendClient(conn net.Conn, sliceArgs []string){
-	fmt.Printf("%v\n", sliceArgs)
 
 	// Get the channel number
 	channel, err := strconv.Atoi(strings.Replace(sliceArgs[2], "\x00", "", -1))
@@ -183,7 +214,20 @@ func main(){
     }
 }
 
-/* Things I would like to improve:
+// Function to fill strings with : before sendind the message
+func fillString(returnString string, toLength int) string {
+	for {
+		lengtString := len(returnString)
+		if lengtString < toLength {
+			returnString = returnString + ":"
+			continue
+		}
+		break
+	}
+	return returnString
+}
+
+/* Things I would like to improve and discuss with teamates:
 
 	-Use a mutex with the server struct since there could be race conditions
 
